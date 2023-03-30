@@ -1,3 +1,16 @@
+lancamentos.push({ cpf: "74914372061", valor: 1234.78 });
+lancamentos.push({ cpf: "74914372061", valor: -123.56 });
+lancamentos.push({ cpf: "74914372061", valor: -865.0 });
+lancamentos.push({ cpf: "41421980096", valor: -987 });
+lancamentos.push({ cpf: "41421980096", valor: 123 });
+lancamentos.push({ cpf: "41421980096", valor: -1225.9 });
+lancamentos.push({ cpf: "05987701007", valor: 1267.39 });
+lancamentos.push({ cpf: "05987701007", valor: 143.9 });
+lancamentos.push({ cpf: "05987701007", valor: 23.4 });
+lancamentos.push({ cpf: "93975495022", valor: 1943 });
+lancamentos.push({ cpf: "93975495022", valor: 8000.21 });
+lancamentos.push({ cpf: "93975495022", valor: 546.78 });
+
 const validarEntradaDeDados = (lancamento) => {
   let resultado = "";
   const cpf = lancamento.cpf;
@@ -7,18 +20,25 @@ const validarEntradaDeDados = (lancamento) => {
   }
 
   const validacaoCpf = validarCpf(cpf);
-  if (validacaoCpf) resultado += validacaoCpf;
+  if (validacaoCpf) {
+    resultado += validacaoCpf;
+  }
 
-  if (typeof valor !== "number") resultado += "Valor deve ser numérico.\n";
+  if (typeof valor !== "number") {
+    resultado += "Valor deve ser numérico.\n";
+  }
 
-  if (valor < -2000 || valor > 15000)
+  if (valor < -2000 || valor > 15000) {
     resultado += "Valor deve estar entre -2000,00 e 15000,00.\n";
+  }
 
   return resultado.length === 0 ? null : resultado;
 };
 
 const recuperarSaldosPorConta = (lancamentos) => {
-  if (lancamentos.length === 0) return [];
+  if (lancamentos.length === 0) {
+    return [];
+  }
 
   const hashTable = {};
   for (const lancamento of lancamentos) {
@@ -39,13 +59,7 @@ const recuperarSaldosPorConta = (lancamentos) => {
 };
 
 const recuperarMaiorMenorLancamentos = (cpf, lancamentos) => {
-  // corrigir erro que ocorre quando se faz a verificação se a função for chamada separa
-  const validacaoCpf = validarCpf(cpf);
-  if (validacaoCpf) {
-    alert(validacaoCpf);
-    return;
-  }
-
+  //melhorar função
   if (lancamentos.length === 0) {
     return [];
   }
@@ -76,54 +90,37 @@ const recuperarMaiorMenorLancamentos = (cpf, lancamentos) => {
 };
 
 const recuperarMaioresSaldos = (lancamentos) => {
-  if (lancamentos.length === 0) {
-    return [];
-  }
+  const saldos = recuperarSaldosPorConta(lancamentos);
 
-  const hashTableValores = {};
-  let todosValores = [];
+  const saldosEmOrdemDesc = saldos.sort((a, b) => {
+    return b.valor - a.valor;
+  });
 
-  for (const lancamento of lancamentos) {
-    const cpf = lancamento.cpf;
-    const valor = Number(lancamento.valor);
-
-    if (!hashTableValores[valor]) {
-      hashTableValores[valor] = cpf;
-    }
-
-    todosValores.push(valor);
-  }
-
-  todosValores.sort((a, b) => b - a);
-  
-  return [
-    { cpf: hashTableValores[todosValores[0]], valor: todosValores[0] },
-    { cpf: hashTableValores[todosValores[1]], valor: todosValores[1] },
-    { cpf: hashTableValores[todosValores[2]], valor: todosValores[2] },
-  ];
+  return saldosEmOrdemDesc.slice(0, 3);
 };
 
 const recuperarMaioresMedias = (lancamentos) => {
-  if (lancamentos.length === 0) return [];
+  const somaDeSaldosForaDeOrdem = recuperarSaldosPorConta(lancamentos);
 
-  const hashTable = {};
-  for (const lancamento of lancamentos) {
+  const hashTableRepeticaoCPF = {};
+  lancamentos.forEach((lancamento) => {
     const cpf = lancamento.cpf;
-    const valor = lancamento.valor;
 
-    if (!hashTable[cpf]) {
-      hashTable[cpf] = Number(valor);
+    if (!hashTableRepeticaoCPF[cpf]) {
+      hashTableRepeticaoCPF[cpf] = 1;
     } else {
-      hashTable[cpf] += Number(valor);
+      hashTableRepeticaoCPF[cpf] += 1;
     }
-  }
+  });
+  
+  const medias = somaDeSaldosForaDeOrdem.map((soma) => {
+    const media = Number(soma.valor)/Number(hashTableRepeticaoCPF[soma.cpf]);
+    return {cpf: soma.cpf, valor: media};
+  });
 
-  const mediasForaDeOrdem = Object.entries(hashTable).map(([cpf, valor]) => ({
-    cpf,
-    valor: valor,
-  }));
+  const mediasOrdenadasDesc = medias.sort(
+    (a, b) => b.valor - a.valor
+  );
 
-  const mediasOrdenadasCresc = mediasForaDeOrdem.sort((a, b) => b.valor - a.valor);
- 
-  return mediasOrdenadasCresc.slice(0, 3);
+  return mediasOrdenadasDesc.slice(0, 3);
 };
